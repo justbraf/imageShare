@@ -19,6 +19,7 @@ Template.addImg.events({
 		$("#imgTitle").val('');
 		$("#imgPath").val('');
 		$("#imgDesc").val('');
+		$("#addImgPreview").attr('src','user-512.png');
 		$("#addImgModal").modal("hide");
 		imagesDB.insert({"title":imgTitle, "path":imgPath, "desc":imgDesc, "createdOn":Date()});
 	},
@@ -26,6 +27,7 @@ Template.addImg.events({
 		$("#imgTitle").val('');
 		$("#imgPath").val('');
 		$("#imgDesc").val('');
+		$("#addImgPreview").attr('src','user-512.png');
 		$("#addImgModal").modal("hide");
 	},
 	'input #imgPath'(event){
