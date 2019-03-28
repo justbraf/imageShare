@@ -44,3 +44,32 @@ Template.mainBody.helpers({
 		return imagesDB.find();
 	}
 });
+
+Template.mainBody.events({
+	'click .js-deleteImg'(){
+		var imgId = this._id;
+		$("#"+imgId).fadeOut('slow', function(){
+			imagesDB.remove({_id:imgId});
+		});
+	},
+	'click .js-editImage'(){
+		var imgId = this._id;
+		$('#ImgPreview').attr('src',imagesDB.findOne({_id:imgId}).path);
+		$("#eimgTitle").val(imagesDB.findOne({_id:imgId}).title);
+		$("#eimgPath").val(imagesDB.findOne({_id:imgId}).path);
+		$("#eimgDesc").val(imagesDB.findOne({_id:imgId}).desc);
+		$('#eId').val(imagesDB.findOne({_id:imgId})._id);
+		$('#editImgModal').modal("show");
+	}
+});
+
+Template.editImg.events({
+	'click .js-updateImg'(){
+		var eId = $('#eId').val();
+		var imgTitle = $("#eimgTitle").val();
+		var imgPath = $("#eimgPath").val();
+		var imgDesc = $("#eimgDesc").val();
+		imagesDB.update({_id:eId}, {$set:{"title":imgTitle, "path":imgPath, "desc":imgDesc}});
+		$('#editImgModal').modal("hide");
+	}
+});
