@@ -41,7 +41,7 @@ Template.mainBody.helpers({
 		return imagesDB.find().count();
 	},
 	allImages(){
-		return imagesDB.find();
+		return imagesDB.find({}, {sort:{imgRate: -1}});
 	}
 });
 
@@ -60,6 +60,11 @@ Template.mainBody.events({
 		$("#eimgDesc").val(imagesDB.findOne({_id:imgId}).desc);
 		$('#eId').val(imagesDB.findOne({_id:imgId})._id);
 		$('#editImgModal').modal("show");
+	},
+	'click .js-rate'(event){
+		var imgId = this.data_id;
+		var rating = $(event.currentTarget).data('userrating');
+		imagesDB.update({_id:imgId}, {$set:{'imgRate':rating}});
 	}
 });
 
