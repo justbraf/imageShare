@@ -21,7 +21,7 @@ Template.addImg.events({
 		$("#imgDesc").val('');
 		$("#addImgPreview").attr('src','user-512.png');
 		$("#addImgModal").modal("hide");
-		imagesDB.insert({"title":imgTitle, "path":imgPath, "desc":imgDesc, "createdOn":Date()});
+		imagesDB.insert({"title":imgTitle, "path":imgPath, "desc":imgDesc, "createdOn":new Date().getTime()});
 	},
 	'click .js-cancelAdd'(){
 		$("#imgTitle").val('');
@@ -40,8 +40,31 @@ Template.mainBody.helpers({
 	imagesFound(){
 		return imagesDB.find().count();
 	},
+	imageAge(){
+		var imgCreatedOn = imagesDB.findOne({_id:this._id}).createdOn;		
+		imgCreatedOn = Math.round((new Date() - imgCreatedOn)/60000);		
+		var timeUnit = " mins";
+		if (imgCreatedOn > 60){
+			imgCreatedOn=Math.round(imgCreatedOn/60);
+			timeUnit = " hours";
+		} else if (imgCreatedOn > 1440){
+			imgCreatedOn=Math.round(imgCreatedOn/1440);
+			timeUnit = " days";
+		}
+		return imgCreatedOn + timeUnit;
+	},
 	allImages(){
-		return imagesDB.find({}, {sort:{imgRate: -1}});
+		//Get time 15 seconds ago
+		var prevTime = new Date() - 15000;
+		var newResults = imagesDB.find({"createdOn":{$gte:prevTime}}).count();
+		if (newResults > 0) {
+			//if new images are found then sort by date first then ratings
+			return imagesDB.find({}, {sort:{createdOn:-1, imgRate:-1}});
+		} else {
+			//else sort by ratings then date
+			return imagesDB.find({}, {sort:{imgRate:-1, createdOn:1}});
+		}
+		
 	}
 });
 
