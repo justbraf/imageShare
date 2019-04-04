@@ -40,16 +40,27 @@ Template.mainBody.helpers({
 	imagesFound(){
 		return imagesDB.find().count();
 	},
-	imageAge(){
+	imageAge(){		
 		var imgCreatedOn = imagesDB.findOne({_id:this._id}).createdOn;		
+		//convert to mins
 		imgCreatedOn = Math.round((new Date() - imgCreatedOn)/60000);		
 		var timeUnit = " mins";
+		//greater than 60 mins then convert to hours
 		if (imgCreatedOn > 60){
 			imgCreatedOn=Math.round(imgCreatedOn/60);
-			timeUnit = " hours";
+			//hour or hours
+			if (imgCreatedOn > 1){
+				timeUnit = " hours";
+			} else {
+				timeUnit = " hour";
+			}
 		} else if (imgCreatedOn > 1440){
 			imgCreatedOn=Math.round(imgCreatedOn/1440);
-			timeUnit = " days";
+			if (imgCreatedOn > 1){
+				timeUnit = " days";
+			} else {
+				timeUnit = " day";
+			}
 		}
 		return imgCreatedOn + timeUnit;
 	},
