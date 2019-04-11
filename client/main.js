@@ -1,8 +1,11 @@
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
+import { Session } from 'meteor/session'
 
 import './main.html';
 import '../lib/collection.js';
+
+Session.set('imgLimit', 3);
 
 lastScrollTop = 0; 
 $(window).scroll(function(event){
@@ -12,12 +15,15 @@ $(window).scroll(function(event){
 		var scrollTop = $(this).scrollTop();
 		// test if we are going down
 		if (scrollTop > lastScrollTop){
-			// yes we are heading down...   
-		 console.log("We have arrived at the bottom of the page");
+			// yes we are heading down...
+			Session.set('imgLimit', Session.get('imgLimit') + 3);
+			
 		}
 		lastScrollTop = scrollTop;
 	}
 });
+
+Accounts.ui.config({});
 
 Template.myJumbo.events({
 	'click .js-addImg'(event){
@@ -85,10 +91,10 @@ Template.mainBody.helpers({
 		var newResults = imagesDB.find({"createdOn":{$gte:prevTime}}).count();
 		if (newResults > 0) {
 			//if new images are found then sort by date first then ratings
-			return imagesDB.find({}, {sort:{createdOn:-1, imgRate:-1}});
+			return imagesDB.find({}, {sort:{createdOn:-1, imgRate:-1}, limit:Session.get('imgLimit')});
 		} else {
 			//else sort by ratings then date
-			return imagesDB.find({}, {sort:{imgRate:-1, createdOn:1}});
+			return imagesDB.find({}, {sort:{imgRate:-1, createdOn:1}, limit:Session.get('imgLimit')});
 		}
 		
 	}
