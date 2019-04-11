@@ -1,6 +1,7 @@
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
-import { Session } from 'meteor/session'
+import { Session } from 'meteor/session';
+import { Accounts } from 'meteor/accounts-base';
 
 import './main.html';
 import '../lib/collection.js';
@@ -23,7 +24,9 @@ $(window).scroll(function(event){
 	}
 });
 
-Accounts.ui.config({});
+Accounts.ui.config({
+  passwordSignupFields: 'USERNAME_ONLY',
+});
 
 Template.myJumbo.events({
 	'click .js-addImg'(event){
@@ -65,22 +68,22 @@ Template.mainBody.helpers({
 		var imgCreatedOn = imagesDB.findOne({_id:this._id}).createdOn;		
 		//convert to mins
 		imgCreatedOn = Math.round((new Date() - imgCreatedOn)/60000);		
-		var timeUnit = " mins";
+		var timeUnit = " mins ago";
 		//greater than 60 mins then convert to hours
 		if (imgCreatedOn > 60){
 			imgCreatedOn=Math.round(imgCreatedOn/60);
 			//hour or hours
 			if (imgCreatedOn > 1){
-				timeUnit = " hours";
+				timeUnit = " hours ago";
 			} else {
-				timeUnit = " hour";
+				timeUnit = " hour ago";
 			}
 		} else if (imgCreatedOn > 1440){
 			imgCreatedOn=Math.round(imgCreatedOn/1440);
 			if (imgCreatedOn > 1){
-				timeUnit = " days";
+				timeUnit = " days ago";
 			} else {
-				timeUnit = " day";
+				timeUnit = " day ago";
 			}
 		}
 		return imgCreatedOn + timeUnit;
@@ -97,6 +100,13 @@ Template.mainBody.helpers({
 			return imagesDB.find({}, {sort:{imgRate:-1, createdOn:1}, limit:Session.get('imgLimit')});
 		}
 		
+	},
+	userLoggedIn(){
+		if (Meteor.user()){
+			return true;
+		} else {
+			return false;
+		}
 	}
 });
 
