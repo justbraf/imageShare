@@ -7,6 +7,7 @@ import './main.html';
 import '../lib/collection.js';
 
 Session.set('imgLimit', 3);
+Session.set('userFilter', false);
 
 lastScrollTop = 0; 
 $(window).scroll(function(event){
@@ -25,7 +26,7 @@ $(window).scroll(function(event){
 });
 
 Accounts.ui.config({
-  passwordSignupFields: 'USERNAME_ONLY',
+	passwordSignupFields: 'USERNAME_ONLY',
 });
 
 Template.myJumbo.events({
@@ -45,7 +46,7 @@ Template.addImg.events({
 		$("#imgDesc").val('');
 		$("#addImgPreview").attr('src','user-512.png');
 		$("#addImgModal").modal("hide");
-		imagesDB.insert({"title":imgTitle, "path":imgPath, "desc":imgDesc, "createdOn":new Date().getTime()});
+		imagesDB.insert({"title":imgTitle, "path":imgPath, "desc":imgDesc, "createdOn":new Date().getTime(), "postedBy":Meteor.user()._id});
 	},
 	'click .js-cancelAdd'(){
 		$("#imgTitle").val('');
@@ -89,24 +90,28 @@ Template.mainBody.helpers({
 		return imgCreatedOn + timeUnit;
 	},
 	allImages(){
-		//Get time 15 seconds ago
-		var prevTime = new Date() - 15000;
-		var newResults = imagesDB.find({"createdOn":{$gte:prevTime}}).count();
-		if (newResults > 0) {
-			//if new images are found then sort by date first then ratings
-			return imagesDB.find({}, {sort:{createdOn:-1, imgRate:-1}, limit:Session.get('imgLimit')});
+		if (Session.get("userFilter") == false){
+			//Get time 15 seconds ago
+			var prevTime = new Date() - 15000;
+			var newResults = imagesDB.find({"createdOn":{$gte:prevTime}}).count();
+			if (newResults > 0) {
+				//if new images are found then sort by date first then ratings
+				return imagesDB.find({}, {sort:{createdOn:-1, imgRate:-1}, limit:Session.get('imgLimit')});
+			} else {
+				//else sort by ratings then date
+				return imagesDB.find({}, {sort:{imgRate:-1, createdOn:1}, limit:Session.get('imgLimit')});
+			}
 		} else {
-			//else sort by ratings then date
-			return imagesDB.find({}, {sort:{imgRate:-1, createdOn:1}, limit:Session.get('imgLimit')});
+			return imagesDB.find({postedBy:Session.get("userFilter")}, {sort:{imgRate:-1, createdOn:1}, limit:Session.get('imgLimit')});
 		}
 		
 	},
-	userLoggedIn(){
-		if (Meteor.user()){
-			return true;
-		} else {
-			return false;
-		}
+	userName(){
+		var uId = imagesDB.findOne({_id:this._id}).postedBy;
+		return Meteor.users.findOne({_id:uId}).username;
+	},
+	userId(){
+		return imagesDB.findOne({_id:this._id}).postedBy;		
 	}
 });
 
@@ -130,6 +135,14 @@ Template.mainBody.events({
 		var imgId = this.data_id;
 		var rating = $(event.currentTarget).data('userrating');
 		imagesDB.update({_id:imgId}, {$set:{'imgRate':rating}});
+	},
+	'click .js-showUser'(event){
+		event.preventDefault();
+		Session.set("userFilter", event.currentTarget.id);
+	},
+	'click .js-clearFilter'(event){
+		event.preventDefault();
+		Session.set("userFilter", false);
 	}
 });
 

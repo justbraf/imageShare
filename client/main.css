@@ -13,8 +13,19 @@ body {
 
 .allImages{
 	width: 100%;
+	object-fit: cover;
 }
 
 .login-link-text{
 	color: white !important;
+}
+
+.card{
+	max-height: 600px;
+}
+
+.imgFrame{
+	width: 100%;
+	max-height: 450px;
+	overflow: hidden;
 }
