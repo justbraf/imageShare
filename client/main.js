@@ -8,6 +8,7 @@ import '../lib/collection.js';
 
 Session.set('imgLimit', 3);
 Session.set('userFilter', false);
+Session.set('searchFilter', false);
 
 lastScrollTop = 0; 
 $(window).scroll(function(event){
@@ -98,8 +99,18 @@ Template.mainBody.helpers({
 				//if new images are found then sort by date first then ratings
 				return imagesDB.find({}, {sort:{createdOn:-1, imgRate:-1}, limit:Session.get('imgLimit')});
 			} else {
-				//else sort by ratings then date
-				return imagesDB.find({}, {sort:{imgRate:-1, createdOn:1}, limit:Session.get('imgLimit')});
+				if (Session.get("searchFilter") == false){
+					//else sort by ratings then date
+					return imagesDB.find({}, {sort:{imgRate:-1, createdOn:1}, limit:Session.get('imgLimit')});
+				} else {
+					console.log("Value:", Session.get("searchFilter"));
+					return imagesDB.find({$or:[
+								{"title":{$regex:Session.get("searchFilter"), $options:'i'}},
+								// {"path":{$regex:Session.get("searchFilter"), $options:'i'}},
+								{"desc":{$regex:Session.get("searchFilter"), $options:'i'}},
+								{"postedBy":{$regex:Session.get("searchFilter"), $options:'i'}}
+							]}, {sort:{imgRate:-1, createdOn:1}, limit:Session.get('imgLimit')});
+				}
 			}
 		} else {
 			return imagesDB.find({postedBy:Session.get("userFilter")}, {sort:{imgRate:-1, createdOn:1}, limit:Session.get('imgLimit')});
@@ -154,5 +165,16 @@ Template.editImg.events({
 		var imgDesc = $("#eimgDesc").val();
 		imagesDB.update({_id:eId}, {$set:{"title":imgTitle, "path":imgPath, "desc":imgDesc}});
 		$('#editImgModal').modal("hide");
+	}
+});
+
+Template.navBar.events({
+	'input .js-search'(){
+		var searchData = $(".js-search").val();
+		if (searchData == "") {
+			Session.set("searchFilter", false);
+		} else {		
+			Session.set("searchFilter", "^.*"+searchData+"*.$");
+		}
 	}
 });
